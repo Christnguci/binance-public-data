@@ -5,6 +5,7 @@ from datetime import *
 import urllib.request
 from argparse import ArgumentParser, RawTextHelpFormatter, ArgumentTypeError
 from enums import *
+import zipfile
 
 def get_destination_dir(file_url, folder=None):
   store_directory = os.environ.get('STORE_DIRECTORY')
@@ -26,6 +27,13 @@ def get_all_symbols(type):
     response = urllib.request.urlopen("https://api.binance.com/api/v3/exchangeInfo").read()
   return list(map(lambda symbol: symbol['symbol'], json.loads(response)['symbols']))
 
+def unzip(path):
+
+  zip_file_path = path
+
+  with zipfile.ZipFile(zip_file_path,'r')  as zip_ref:
+    zip_ref.extractall('/Users/chris/Documents/Cloning/binance-public-data/python/data/spot/daily/trades/BTCUSDT')
+    print(zip_ref.namelist())
 def download_file(base_path, file_name, date_range=None, folder=None):
   download_path = "{}{}".format(base_path, file_name)
   if folder:
@@ -45,8 +53,8 @@ def download_file(base_path, file_name, date_range=None, folder=None):
     Path(get_destination_dir(base_path)).mkdir(parents=True, exist_ok=True)
 
   try:
-    download_url = get_download_url(download_path)
-    dl_file = urllib.request.urlopen(download_url)
+    download_url = get_download_url(download_path) # direct to the binance public website
+    dl_file = urllib.request.urlopen(download_url) # create a string or an url object
     length = dl_file.getheader('content-length')
     if length:
       length = int(length)
@@ -60,16 +68,22 @@ def download_file(base_path, file_name, date_range=None, folder=None):
         if not buf:
           break
         dl_progress += len(buf)
+        print("download progress")
         out_file.write(buf)
         done = int(50 * dl_progress / length)
         sys.stdout.write("\r[%s%s]" % ('#' * done, '.' * (50-done)) )    
         sys.stdout.flush()
-
   except urllib.error.HTTPError:
     print("\nFile not found: {}".format(download_url))
     pass
 
+  try:
+        unzip(save_path) 
+  except Exception as e:
+        raise e
 def convert_to_date_object(d):
+  print(type(d))
+  print(d)
   year, month, day = [int(x) for x in d.split('-')]
   date_obj = date(year, month, day)
   return date_obj

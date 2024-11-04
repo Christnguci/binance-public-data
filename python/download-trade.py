@@ -87,28 +87,74 @@ def download_daily_trades(trading_type, symbols, num_symbols, dates, start_date,
 
     current += 1
 
-if __name__ == "__main__":
-    parser = get_parser('trades')
-    args = parser.parse_args(sys.argv[1:])
+# if __name__ == "__main__":
+#     parser = get_parser('trades')
+#     args = parser.parse_args(sys.argv[1:])
+#     print(args)
 
-    if not args.symbols:
+#     if not args.symbols:
+#       print("fetching all symbols from exchange")
+#       symbols = get_all_symbols(args.type)
+#       num_symbols = len(symbols)
+#     else:
+#       symbols = args.symbols
+#       num_symbols = len(symbols)
+#       print("fetching {} symbols from exchange".format(num_symbols))
+
+#     if args.dates:
+#       dates = args.dates
+#     else:
+#       period = convert_to_date_object(datetime.today().strftime('%Y-%m-%d')) - convert_to_date_object(
+#         PERIOD_START_DATE)
+#       dates = pd.date_range(end=datetime.today(), periods=period.days + 1).to_pydatetime().tolist()
+#       dates = [date.strftime("%Y-%m-%d") for date in dates]
+#       if args.skip_monthly == 0:
+#         download_monthly_trades(args.type, symbols, num_symbols, args.years, args.months, args.startDate, args.endDate, args.folder, args.checksum)
+#     if args.skip_daily == 0:
+#       #download_daily_trades("spot",['BTCUSDT'],1,'2024-10-27'],None,None,None, None,0)
+#       download_daily_trades(args.type, symbols, num_symbols, dates, args.startDate, args.endDate, args.folder, args.checksum)
+
+
+# New code  
+def main():
+    trading_type = "spot"
+    symbols = [input("Symbols: ")]
+    dates = [input("Dates: ")]
+    startDate=None
+    endDate = None
+    folder = None
+    checksum = 0
+    skip_daily = 0  
+
+
+
+    if not symbols:
       print("fetching all symbols from exchange")
-      symbols = get_all_symbols(args.type)
+      symbols = get_all_symbols(trading_type)
       num_symbols = len(symbols)
     else:
-      symbols = args.symbols
       num_symbols = len(symbols)
       print("fetching {} symbols from exchange".format(num_symbols))
 
-    if args.dates:
-      dates = args.dates
-    else:
+    if not date:
       period = convert_to_date_object(datetime.today().strftime('%Y-%m-%d')) - convert_to_date_object(
         PERIOD_START_DATE)
       dates = pd.date_range(end=datetime.today(), periods=period.days + 1).to_pydatetime().tolist()
       dates = [date.strftime("%Y-%m-%d") for date in dates]
-      if args.skip_monthly == 0:
-        download_monthly_trades(args.type, symbols, num_symbols, args.years, args.months, args.startDate, args.endDate, args.folder, args.checksum)
-    if args.skip_daily == 0:
-      download_daily_trades(args.type, symbols, num_symbols, dates, args.startDate, args.endDate, args.folder, args.checksum)
-    
+      if skip_monthly == 0:
+        download_monthly_trades(trading_type, symbols, num_symbols, years, months, startDate, endDate, folder, checksum)
+    if skip_daily == 0:
+      #download_daily_trades("spot",['BTCUSDT'],1,'2024-10-27'],None,None,None, None,0)
+      try:
+        download_daily_trades(trading_type, symbols, num_symbols, dates, startDate, endDate, folder, checksum)
+        import zipfile
+
+        zip_file_path = '/Users/chris/Documents/Cloning/binance-public-data/python/data/spot/daily/trades/BTCUSDT/BTCUSDT-trades-2024-10-28.zip'
+
+        with zipfile.ZipFile(zip_file_path,'r')  as zip_ref:
+            zip_ref.extractall('/Users/chris/Documents/Cloning/binance-public-data/python/data/spot/daily/trades/BTCUSDT')
+            print(zip_ref.namelist())
+      except Exception as e:
+        raise(e)
+
+main()
